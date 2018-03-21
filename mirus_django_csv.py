@@ -1,24 +1,23 @@
-import logging
 import os
+import six
+import logging
 
 from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
 
-# def queryset_csv_export(qs, fields, cache_funcs=None, filepath=os.path.join(settings.DEV_DATA_DIR, "csv_export.csv"), fileobj=None, delimiter='|'):
 def queryset_csv_export(qs, fields, cache_funcs=None, filepath=None, fileobj=None, delimiter='|'):
     import csv
     import inspect
     from django.db.models.query import QuerySet
-    # from sf_aoc.utils import utils
 
     if not filepath:
         raise Exception("expecting a filepath")
     file_dir = os.path.dirname(filepath)
     if not os.path.exists(file_dir):
         os.makedirs(file_dir)
-    csvfile = fileobj or open(filepath, 'wb')  # will write to disk by default
+    csvfile = fileobj or open(filepath, 'w')  # will write to disk by default
     writer = csv.writer(csvfile, delimiter=delimiter)
 
     def to_string(val):
@@ -26,10 +25,12 @@ def queryset_csv_export(qs, fields, cache_funcs=None, filepath=None, fileobj=Non
             val = ""
         if callable(val):
             val = val()
-        try:
-            val = ascii_encode(val)
-        except:
+        if not isinstance(val, six.string_types):
             val = str(val)
+        # try:
+        #     val = ascii_encode(val)
+        # except:
+        #     val = str(val)
 
         return ("%r" % val)[1:-1]
 
@@ -76,7 +77,7 @@ def queryset_csv_export(qs, fields, cache_funcs=None, filepath=None, fileobj=Non
                     else:
                         raise Exception("invalid number of args for cache function")
         for field in fields:
-            if isinstance(field, basestring):
+            if isinstance(field, six.string_types):
                 if field not in header_names:
                     header_names.append(field)
                 if isinstance(obj, dict):
@@ -111,6 +112,6 @@ def queryset_csv_export(qs, fields, cache_funcs=None, filepath=None, fileobj=Non
         return fileobj
 
 
-def ascii_encode(string):
-    import unicodedata
-    return unicodedata.normalize('NFKD', unicode(string)).encode('ascii', 'ignore')
+# def ascii_encode(string):
+#     import unicodedata
+#     return unicodedata.normalize('NFKD', unicode(string)).encode('ascii', 'ignore')
