@@ -1,0 +1,7 @@
+# use glob syntax.
+syntax: glob
+
+*.pyc
+mirus_django_csv.egg-info
+dist
+.git
